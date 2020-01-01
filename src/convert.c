@@ -351,6 +351,22 @@ bool is_valid_digit_char (const u8 c)
   return false;
 }
 
+u16 char_to_u16 (const u8 text[2])
+{
+  u16 v = 0;
+
+  v |= ((u16) text[0] << 0);
+  v |= ((u16) text[1] << 8);
+
+  return (v);
+}
+
+void u16_to_char (const u16 v, u8 text[2])
+{
+  text[0] = ((u8) (v >> 0));
+  text[1] = ((u8) (v >> 8));
+}
+
 u8 hex_convert (const u8 c)
 {
   return (c & 15) + (c >> 6) * 9;
@@ -362,6 +378,18 @@ u8 hex_to_u8 (const u8 hex[2])
 
   v |= (hex_convert (hex[1]) << 0);
   v |= (hex_convert (hex[0]) << 4);
+
+  return (v);
+}
+
+u16 hex_to_u16 (const u8 hex[4])
+{
+  u16 v = 0;
+
+  v |= ((u16) hex_convert (hex[1]) << 0);
+  v |= ((u16) hex_convert (hex[0]) << 4);
+  v |= ((u16) hex_convert (hex[3]) << 8);
+  v |= ((u16) hex_convert (hex[2]) << 12);
 
   return (v);
 }
@@ -416,6 +444,20 @@ void u8_to_hex (const u8 v, u8 hex[2])
 
   hex[1] = tbl[v >>  0 & 15];
   hex[0] = tbl[v >>  4 & 15];
+}
+
+void u16_to_hex (const u16 v, u8 hex[4])
+{
+  const u8 tbl[0x10] =
+  {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'a', 'b', 'c', 'd', 'e', 'f',
+  };
+
+  hex[1] = tbl[v >>  0 & 15];
+  hex[0] = tbl[v >>  4 & 15];
+  hex[3] = tbl[v >>  8 & 15];
+  hex[2] = tbl[v >> 12 & 15];
 }
 
 void u32_to_hex (const u32 v, u8 hex[8])
