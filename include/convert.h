@@ -30,8 +30,10 @@ bool is_valid_float_char      (const u8 c);
 u8 hex_convert (const u8 c);
 
 u16 char_to_u16 (const u8 text[2]);
+u32 char_to_u32 (const u8 text[4]);
 
 void u16_to_char (const u16 v, u8 text[2]);
+void u32_to_char (const u32 v, u8 text[4]);
 
 u8  hex_to_u8  (const u8 hex[2]);
 u16 hex_to_u16 (const u8 hex[4]);

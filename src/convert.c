@@ -361,10 +361,30 @@ u16 char_to_u16 (const u8 text[2])
   return (v);
 }
 
+u32 char_to_u32 (const u8 text[4])
+{
+  u32 v = 0;
+
+  v |= ((u32) text[0] <<  0);
+  v |= ((u32) text[1] <<  8);
+  v |= ((u32) text[2] << 16);
+  v |= ((u32) text[3] << 24);
+
+  return (v);
+}
+
 void u16_to_char (const u16 v, u8 text[2])
 {
   text[0] = ((u8) (v >> 0));
   text[1] = ((u8) (v >> 8));
+}
+
+void u32_to_char (const u32 v, u8 text[4])
+{
+  text[0] = ((u8) (v >>  0));
+  text[1] = ((u8) (v >>  8));
+  text[2] = ((u8) (v >> 16));
+  text[3] = ((u8) (v >> 24));
 }
 
 u8 hex_convert (const u8 c)

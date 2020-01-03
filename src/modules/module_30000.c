@@ -12,9 +12,9 @@
 
 static const u32   ATTACK_EXEC    = ATTACK_EXEC_INSIDE_KERNEL;
 static const u32   DGST_POS0      = 0;
-static const u32   DGST_POS1      = 1;
+static const u32   DGST_POS1      = 3;
 static const u32   DGST_POS2      = 2;
-static const u32   DGST_POS3      = 3;
+static const u32   DGST_POS3      = 1;
 static const u32   DGST_SIZE      = DGST_SIZE_4_4;
 static const u32   HASH_CATEGORY  = HASH_CATEGORY_RAW_HASH;
 static const char *HASH_NAME      = "SofieHash";
@@ -50,7 +50,7 @@ const char *module_st_pass        (MAYBE_UNUSED const hashconfig_t *hashconfig, 
 
 int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED void *digest_buf, MAYBE_UNUSED salt_t *salt, MAYBE_UNUSED void *esalt_buf, MAYBE_UNUSED void *hook_salt_buf, MAYBE_UNUSED hashinfo_t *hash_info, const char *line_buf, MAYBE_UNUSED const int line_len)
 {
-  u16 *digest = (u16 *) digest_buf;
+  u32 *digest = (u32 *) digest_buf;
 
   token_t token;
 
@@ -67,10 +67,10 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
   const u8 *hash_pos = token.buf[0];
 
-  digest[0] = char_to_u16 (hash_pos + 0);
-  digest[1] = char_to_u16 (hash_pos + 2);
-  digest[2] = char_to_u16 (hash_pos + 4);
-  digest[3] = char_to_u16 (hash_pos + 6);
+  digest[DGST_POS0] = char_to_u32 (hash_pos + 0);
+  digest[DGST_POS1] = char_to_u32 (hash_pos + 4);
+  digest[DGST_POS2] = 0;
+  digest[DGST_POS3] = 0;
 
   /*
   if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
@@ -86,17 +86,17 @@ int module_hash_decode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
 int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const void *digest_buf, MAYBE_UNUSED const salt_t *salt, MAYBE_UNUSED const void *esalt_buf, MAYBE_UNUSED const void *hook_salt_buf, MAYBE_UNUSED const hashinfo_t *hash_info, char *line_buf, MAYBE_UNUSED const int line_size)
 {
-  const u16 *digest = (const u16 *) digest_buf;
+  const u32 *digest = (const u32 *) digest_buf;
 
   // we can not change anything in the original buffer, otherwise destroying sorting
   // therefore create some local buffer
 
-  u16 tmp[4];
+  u32 tmp[4];
 
-  tmp[0] = digest[0];
-  tmp[1] = digest[1];
-  tmp[2] = digest[2];
-  tmp[3] = digest[3];
+  tmp[0] = digest[DGST_POS0];
+  tmp[1] = digest[DGST_POS1];
+  tmp[2] = digest[DGST_POS2];
+  tmp[3] = digest[DGST_POS3];
 
   /*
   if (hashconfig->opti_type & OPTI_TYPE_OPTIMIZED_KERNEL)
@@ -110,12 +110,10 @@ int module_hash_encode (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSE
 
   u8 *out_buf = (u8 *) line_buf;
 
-  u16_to_char (tmp[0], out_buf + 0);
-  u16_to_char (tmp[1], out_buf + 2);
-  u16_to_char (tmp[2], out_buf + 4);
-  u16_to_char (tmp[3], out_buf + 6);
+  u32_to_char (tmp[0], out_buf + 0);
+  u32_to_char (tmp[1], out_buf + 4);
 
-  const int out_len = 32;
+  const int out_len = 8;
 
   return out_len;
 }

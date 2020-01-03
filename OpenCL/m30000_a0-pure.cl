@@ -52,24 +52,25 @@ KERNEL_FQ void m30000_mxx (KERN_ATTR_RULES ())
     md5_final (&ctx);
 
     u8 buff[16];
-    buff[0]  = ((u8) (ctx.h[0] >>  0));
-    buff[1]  = ((u8) (ctx.h[0] >>  8));
-    buff[2]  = ((u8) (ctx.h[0] >> 16));
-    buff[3]  = ((u8) (ctx.h[0] >> 24));
-    buff[4]  = ((u8) (ctx.h[3] >>  0));
-    buff[5]  = ((u8) (ctx.h[3] >>  8));
-    buff[6]  = ((u8) (ctx.h[3] >> 16));
-    buff[7]  = ((u8) (ctx.h[3] >> 24));
-    buff[8]  = ((u8) (ctx.h[2] >>  0));
-    buff[9]  = ((u8) (ctx.h[2] >>  8));
-    buff[10] = ((u8) (ctx.h[2] >> 16));
-    buff[11] = ((u8) (ctx.h[2] >> 24));
-    buff[12] = ((u8) (ctx.h[1] >>  0));
-    buff[13] = ((u8) (ctx.h[1] >>  8));
-    buff[14] = ((u8) (ctx.h[1] >> 16));
-    buff[15] = ((u8) (ctx.h[1] >> 24));
+    buff[0]  = ((u8) (ctx.h[DGST_R0] >>  0));
+    buff[1]  = ((u8) (ctx.h[DGST_R0] >>  8));
+    buff[2]  = ((u8) (ctx.h[DGST_R0] >> 16));
+    buff[3]  = ((u8) (ctx.h[DGST_R0] >> 24));
+    buff[4]  = ((u8) (ctx.h[DGST_R1] >>  0));
+    buff[5]  = ((u8) (ctx.h[DGST_R1] >>  8));
+    buff[6]  = ((u8) (ctx.h[DGST_R1] >> 16));
+    buff[7]  = ((u8) (ctx.h[DGST_R1] >> 24));
+    buff[8]  = ((u8) (ctx.h[DGST_R2] >>  0));
+    buff[9]  = ((u8) (ctx.h[DGST_R2] >>  8));
+    buff[10] = ((u8) (ctx.h[DGST_R2] >> 16));
+    buff[11] = ((u8) (ctx.h[DGST_R2] >> 24));
+    buff[12] = ((u8) (ctx.h[DGST_R3] >>  0));
+    buff[13] = ((u8) (ctx.h[DGST_R3] >>  8));
+    buff[14] = ((u8) (ctx.h[DGST_R3] >> 16));
+    buff[15] = ((u8) (ctx.h[DGST_R3] >> 24));
 
-    u8 temp_result[8];
+    u8 temp_result[9];
+    temp_result[8] = 0;
 
     for(int i = 0; i<8; i++)
     {
@@ -92,18 +93,36 @@ KERNEL_FQ void m30000_mxx (KERN_ATTR_RULES ())
       temp_result[i] = tmp;
     }
 
-    u16x result[4];
+    u8 temp = 0;
 
-    for(int i = 0; i<4; i++)
-    {
-      result[i] |= ((u16) (temp_result[2*i]   >> 0));
-      result[i] |= ((u16) (temp_result[2*i+1] >> 8));
-    }
+    temp = temp_result[2];
+    temp_result[2] = temp_result[6];
+    temp_result[6] = temp;
 
-    const u16x r0 = result[0];
-    const u16x r1 = result[3];
-    const u16x r2 = result[2];
-    const u16x r3 = result[1];
+    temp = temp_result[3];
+    temp_result[3] = temp_result[7];
+    temp_result[7] = temp;
+
+    u32x result[4];
+
+    result[DGST_R0] = 0;
+    result[DGST_R1] = 0;
+    result[DGST_R2] = 0;
+    result[DGST_R3] = 0;
+
+    result[DGST_R0] |= ((u32) (temp_result[0] <<  0));
+    result[DGST_R0] |= ((u32) (temp_result[1] <<  8));
+    result[DGST_R0] |= ((u32) (temp_result[2] << 16));
+    result[DGST_R0] |= ((u32) (temp_result[3] << 24));
+    result[DGST_R1] |= ((u32) (temp_result[4] <<  0));
+    result[DGST_R1] |= ((u32) (temp_result[5] <<  8));
+    result[DGST_R1] |= ((u32) (temp_result[6] << 16));
+    result[DGST_R1] |= ((u32) (temp_result[7] << 24));
+
+    const u32x r0 = result[DGST_R0];
+    const u32x r1 = result[DGST_R1];
+    const u32x r2 = result[DGST_R2];
+    const u32x r3 = result[DGST_R3];
 
     COMPARE_M_SCALAR (r0, r1, r2, r3);
   }
@@ -124,12 +143,12 @@ KERNEL_FQ void m30000_sxx (KERN_ATTR_RULES ())
    * digest
    */
 
-  const u16 search[4] =
+  const u32 search[4] =
   {
-    ((u16) (digests_buf[digests_offset].digest_buf[0] >>  0)),
-    ((u16) (digests_buf[digests_offset].digest_buf[0] >> 16)),
-    ((u16) (digests_buf[digests_offset].digest_buf[1] >>  0)),
-    ((u16) (digests_buf[digests_offset].digest_buf[1] >> 16))
+    digests_buf[digests_offset].digest_buf[DGST_R0],
+    digests_buf[digests_offset].digest_buf[DGST_R1],
+    digests_buf[digests_offset].digest_buf[DGST_R2],
+    digests_buf[digests_offset].digest_buf[DGST_R3]
   };
 
   /**
@@ -157,24 +176,25 @@ KERNEL_FQ void m30000_sxx (KERN_ATTR_RULES ())
     md5_final (&ctx);
 
     u8 buff[16];
-    buff[0]  = ((u8) (ctx.h[0] >>  0));
-    buff[1]  = ((u8) (ctx.h[0] >>  8));
-    buff[2]  = ((u8) (ctx.h[0] >> 16));
-    buff[3]  = ((u8) (ctx.h[0] >> 24));
-    buff[4]  = ((u8) (ctx.h[3] >>  0));
-    buff[5]  = ((u8) (ctx.h[3] >>  8));
-    buff[6]  = ((u8) (ctx.h[3] >> 16));
-    buff[7]  = ((u8) (ctx.h[3] >> 24));
-    buff[8]  = ((u8) (ctx.h[2] >>  0));
-    buff[9]  = ((u8) (ctx.h[2] >>  8));
-    buff[10] = ((u8) (ctx.h[2] >> 16));
-    buff[11] = ((u8) (ctx.h[2] >> 24));
-    buff[12] = ((u8) (ctx.h[1] >>  0));
-    buff[13] = ((u8) (ctx.h[1] >>  8));
-    buff[14] = ((u8) (ctx.h[1] >> 16));
-    buff[15] = ((u8) (ctx.h[1] >> 24));
+    buff[0]  = ((u8) (ctx.h[DGST_R0] >>  0));
+    buff[1]  = ((u8) (ctx.h[DGST_R0] >>  8));
+    buff[2]  = ((u8) (ctx.h[DGST_R0] >> 16));
+    buff[3]  = ((u8) (ctx.h[DGST_R0] >> 24));
+    buff[4]  = ((u8) (ctx.h[DGST_R1] >>  0));
+    buff[5]  = ((u8) (ctx.h[DGST_R1] >>  8));
+    buff[6]  = ((u8) (ctx.h[DGST_R1] >> 16));
+    buff[7]  = ((u8) (ctx.h[DGST_R1] >> 24));
+    buff[8]  = ((u8) (ctx.h[DGST_R2] >>  0));
+    buff[9]  = ((u8) (ctx.h[DGST_R2] >>  8));
+    buff[10] = ((u8) (ctx.h[DGST_R2] >> 16));
+    buff[11] = ((u8) (ctx.h[DGST_R2] >> 24));
+    buff[12] = ((u8) (ctx.h[DGST_R3] >>  0));
+    buff[13] = ((u8) (ctx.h[DGST_R3] >>  8));
+    buff[14] = ((u8) (ctx.h[DGST_R3] >> 16));
+    buff[15] = ((u8) (ctx.h[DGST_R3] >> 24));
 
-    u8 temp_result[8];
+    u8 temp_result[9];
+    temp_result[8] = 0;
 
     for(int i = 0; i<8; i++)
     {
@@ -197,18 +217,36 @@ KERNEL_FQ void m30000_sxx (KERN_ATTR_RULES ())
       temp_result[i] = tmp;
     }
 
-    u16x result[4];
+    u8 temp = 0;
 
-    for(int i = 0; i<4; i++)
-    {
-      result[i] |= ((u16) (temp_result[2*i]   << 0));
-      result[i] |= ((u16) (temp_result[2*i+1] << 8));
-    }
+    temp = temp_result[2];
+    temp_result[2] = temp_result[6];
+    temp_result[6] = temp;
 
-    const u16x r0 = result[0];
-    const u16x r1 = result[3];
-    const u16x r2 = result[2];
-    const u16x r3 = result[1];
+    temp = temp_result[3];
+    temp_result[3] = temp_result[7];
+    temp_result[7] = temp;    
+
+    u32x result[4];
+
+    result[DGST_R0] = 0;
+    result[DGST_R1] = 0;
+    result[DGST_R2] = 0;
+    result[DGST_R3] = 0;
+
+    result[DGST_R0] |= ((u32) (temp_result[0] <<  0));
+    result[DGST_R0] |= ((u32) (temp_result[1] <<  8));
+    result[DGST_R0] |= ((u32) (temp_result[2] << 16));
+    result[DGST_R0] |= ((u32) (temp_result[3] << 24));
+    result[DGST_R1] |= ((u32) (temp_result[4] <<  0));
+    result[DGST_R1] |= ((u32) (temp_result[5] <<  8));
+    result[DGST_R1] |= ((u32) (temp_result[6] << 16));
+    result[DGST_R1] |= ((u32) (temp_result[7] << 24));
+
+    const u32x r0 = result[DGST_R0];
+    const u32x r1 = result[DGST_R1];
+    const u32x r2 = result[DGST_R2];
+    const u32x r3 = result[DGST_R3];
 
     COMPARE_S_SCALAR (r0, r1, r2, r3);
   }
