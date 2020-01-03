@@ -315,6 +315,7 @@ NVIDIA GPUs require "NVIDIA Driver" (418.56 or later) and "CUDA Toolkit" (10.1 o
 - Django (SHA-1)
 - Web2py pbkdf2-sha512
 - TOTP (HMAC-SHA1)
+- Sofia Hash
 
 ##
 ## Attack-Modes
