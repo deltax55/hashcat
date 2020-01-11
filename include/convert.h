@@ -29,11 +29,19 @@ bool is_valid_float_char      (const u8 c);
 
 u8 hex_convert (const u8 c);
 
+u16 char_to_u16 (const u8 text[2]);
+u32 char_to_u32 (const u8 text[4]);
+
+void u16_to_char (const u16 v, u8 text[2]);
+void u32_to_char (const u32 v, u8 text[4]);
+
 u8  hex_to_u8  (const u8 hex[2]);
+u16 hex_to_u16 (const u8 hex[4]);
 u32 hex_to_u32 (const u8 hex[8]);
 u64 hex_to_u64 (const u8 hex[16]);
 
 void u8_to_hex  (const u8  v, u8 hex[2]);
+void u16_to_hex (const u16  v, u8 hex[4]);
 void u32_to_hex (const u32 v, u8 hex[8]);
 void u64_to_hex (const u64 v, u8 hex[16]);
 
